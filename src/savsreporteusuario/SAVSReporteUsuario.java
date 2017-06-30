@@ -15,28 +15,13 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
-import org.apache.poi.openxml4j.opc.OPCPackage;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
-import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.util.CellReference;
-import org.apache.poi.xssf.eventusermodel.XSSFReader;
-import org.apache.poi.xssf.model.SharedStringsTable;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
-import org.apache.poi.xssf.usermodel.XSSFSheet;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 
 
 /**
@@ -44,7 +29,8 @@ import org.xml.sax.XMLReader;
  * @author erick.medina
  */
 public class SAVSReporteUsuario {
-    public static final String fileName = "D:\\Documentos\\Inspeccion AVS\\2017-05 ClaroTv\\Usuarios\\Base Noviembre.xls";
+    public static final String fileName = "D:\\Documentos\\Inspeccion AVS\\2017-05 ClaroTv\\Usuarios\\Base Diciembre.xls";
+    public static final String JURIDICO_IDENTIFIER = "RUC";
     
     
     /**
@@ -61,11 +47,8 @@ public class SAVSReporteUsuario {
             HSSFSheet sheet = wb.getSheetAt(0);
             int rows = sheet.getPhysicalNumberOfRows();
             ArrayList<Usuario> usuarios = new ArrayList<>();
-            ArrayList<String> provincias = new ArrayList();
-            ArrayList<String> ciudades = new ArrayList<>();
             HashMap<String, String> ubicacion = new HashMap<>();
        
-            
             for (int r = 1; r < rows; r++) {
                     HSSFRow row = sheet.getRow(r);
                     if (row == null) {
@@ -74,6 +57,11 @@ public class SAVSReporteUsuario {
                                                          
                     Usuario usuario = new Usuario();       
                    
+                    /*formato del documento en Excel
+                     * REGION - CANAL - PRODUCTO - SUBPRODUCTO - NOMBRE DE PLAN BASE - DECODIFICADORES - DATO_IDENTIFICACION
+                     * TIPO IDENTIFICACION - DATO NOMBRE COMPLETO - CONCATENADO ARCOTEL - PROV ARCO - CIU ARCO - PARR ARCO
+                     * */
+                     
                     usuario.setREGION(row.getCell(0)!=null?row.getCell(0).getStringCellValue():"");
                     usuario.setCANAL(row.getCell(1)!=null?row.getCell(1).getStringCellValue():"");
                     usuario.setPRODUCTO(row.getCell(2)!=null?row.getCell(2).getStringCellValue():"");
@@ -93,23 +81,14 @@ public class SAVSReporteUsuario {
                     usuario.setParr_Arco(row.getCell(12)!=null?row.getCell(12).getStringCellValue():"");
                     
                     usuarios.add(usuario);
-                    if (!provincias.contains(provincia)){
-                        provincias.add(provincia);
-                    }
-                    
-                    if (!ciudades.contains(ciudad)){
-                        ciudades.add(ciudad);
-                    }
-                                       
+                          
                     ubicacion.put(ciudad, provincia);
                     
             }
             
-            int cont_provincia = 0;
                         
             TreeMap<String, String> mSortedUbicaciones = new TreeMap<>(ubicacion);
-            mSortedUbicaciones.putAll(ubicacion);
-            
+                       
             Iterator it = mSortedUbicaciones.entrySet().iterator();
             int mContTotal = 0;
             while (it.hasNext()) {
@@ -121,20 +100,19 @@ public class SAVSReporteUsuario {
                 int mContNatural = 0;
                 
                 for (Usuario usuario:usuarios){
-                    //if (!usuario.getProv_Arco().equals(mProvincia)) continue;
                     if (!usuario.getCiu_Arco().equals(mCiudad)) continue;
                     mContCiudad++;
                     mContTotal++;
-                    if (usuario.getTIPO_IDENTIFICACION().equals("RUC")){
+                    if (usuario.getTIPO_IDENTIFICACION().equals(JURIDICO_IDENTIFIER)){
                         mContJuridica++;
                     } else {
                         mContNatural++;
-                    }
+                    }                 
                 }
                 
                 System.out.println(mProvincia+";"+mCiudad+";"+mContJuridica+";"+mContNatural);
                 
-                //it.remove(); // avoids a ConcurrentModificationException
+                it.remove(); // avoids a ConcurrentModificationException
             }
             
             System.out.println("Total:"+mContTotal);
@@ -156,7 +134,7 @@ public class SAVSReporteUsuario {
     private static HSSFWorkbook readFile(String filename) throws IOException {
 	    FileInputStream fis = new FileInputStream(filename);
 	    try {
-	        return new HSSFWorkbook(fis);		// NOSONAR - should not be closed here
+	        return new HSSFWorkbook(fis);		
 	    } finally {
 	        fis.close();
 	    }
