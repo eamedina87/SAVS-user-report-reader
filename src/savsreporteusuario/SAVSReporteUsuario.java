@@ -57,7 +57,7 @@ public class SAVSReporteUsuario {
                                                          
                     Usuario usuario = new Usuario();       
                    
-                    /*formato del documento en Excel
+                    /*Formato del documento en Excel
                      * REGION - CANAL - PRODUCTO - SUBPRODUCTO - NOMBRE DE PLAN BASE - DECODIFICADORES - DATO_IDENTIFICACION
                      * TIPO IDENTIFICACION - DATO NOMBRE COMPLETO - CONCATENADO ARCOTEL - PROV ARCO - CIU ARCO - PARR ARCO
                      * */
@@ -95,13 +95,11 @@ public class SAVSReporteUsuario {
                 Map.Entry pair = (Map.Entry)it.next();
                 String mCiudad = (String) pair.getKey();
                 String mProvincia = (String) pair.getValue();
-                int mContCiudad = 0;
                 int mContJuridica = 0;
                 int mContNatural = 0;
                 
                 for (Usuario usuario:usuarios){
                     if (!usuario.getCiu_Arco().equals(mCiudad)) continue;
-                    mContCiudad++;
                     mContTotal++;
                     if (usuario.getTIPO_IDENTIFICACION().equals(JURIDICO_IDENTIFIER)){
                         mContJuridica++;
@@ -116,9 +114,7 @@ public class SAVSReporteUsuario {
             }
             
             System.out.println("Total:"+mContTotal);
-            
            
-
         } catch (IOException ex) {
             Logger.getLogger(SAVSReporteUsuario.class.getName()).log(Level.SEVERE, null, ex);
         }  finally {
@@ -128,7 +124,6 @@ public class SAVSReporteUsuario {
                 Logger.getLogger(SAVSReporteUsuario.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
     }
     
     private static HSSFWorkbook readFile(String filename) throws IOException {
